@@ -53,3 +53,37 @@ class Cart(models.Model):
 
     def get_total_price(self):
         return self.quantity * self.product.price
+
+### Thêm mô hình đơn hàng QR
+class QROrder(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Chờ thanh toán'),
+        ('paid', 'Đã thanh toán'),
+        ('cancelled', 'Đã hủy'),
+    ]
+    order_id = models.CharField(max_length=50, unique=True)
+    session_key = models.CharField(max_length=255)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    customer_name = models.CharField(max_length=100)
+    customer_email = models.EmailField()
+    customer_phone = models.CharField(max_length=15)
+    customer_address = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    qr_content = models.TextField()  # Nội dung mã QR
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Order {self.order_id} - {self.total_amount} VND"
+
+class QROrderItem(models.Model):
+    qr_order = models.ForeignKey(QROrder, related_name='items', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    def __str__(self):
+        return f"{self.quantity} x {self.product.name}"
+    
+    def get_total_price(self):
+        return self.quantity * self.price

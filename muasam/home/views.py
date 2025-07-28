@@ -1,11 +1,19 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
-from .models import Product, Order, Cart
-from .forms import OrderForm, ReviewForm
-from django.http import HttpResponseNotFound
+from .models import Product, Order, Cart, QROrder, QROrderItem
+from .forms import OrderForm, ReviewForm, QROrderForm
+from django.http import HttpResponseNotFound, JsonResponse
 from django.contrib import messages
 from .forms import CustomUserCreationForm
 from django.contrib.sessions.models import Session
+import qrcode
+from io import BytesIO
+import base64
+import uuid
+from django.utils import timezone
+import json
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 
 
 def home(request):
@@ -114,3 +122,129 @@ def remove_from_cart(request, cart_id):
     cart_item = get_object_or_404(Cart, id=cart_id)
     cart_item.delete()
     return redirect('view_cart')
+
+
+
+
+
+# QR Payment Views
+def qr_checkout(request):
+    """Hiển thị form thông tin khách hàng trước khi tạo mã QR"""
+    session_key = request.session.session_key
+    if not session_key:
+        messages.error(request, 'Phiên làm việc không hợp lệ. Vui lòng thêm sản phẩm vào giỏ hàng.')
+        return redirect('view_cart')
+    
+    cart_items = Cart.objects.filter(session_key=session_key)
+    if not cart_items.exists():
+        messages.error(request, 'Giỏ hàng trống. Vui lòng thêm sản phẩm trước khi thanh toán.')
+        return redirect('view_cart')
+    
+    total_price = sum(item.get_total_price() for item in cart_items)
+    
+    if request.method == 'POST':
+        form = QROrderForm(request.POST)
+        if form.is_valid():
+            # Tạo đơn hàng mới
+            order = form.save(commit=False)
+            order.order_id = f"QR{uuid.uuid4().hex[:8].upper()}"
+            order.session_key = session_key
+            order.total_amount = total_price
+            
+            # Tạo nội dung mã QR (thông tin chuyển khoản)
+            bank_info = {
+                "bank": "Vietcombank",
+                "account": "1234567890",
+                "name": "SMARTTECH STORE",
+                "amount": str(total_price),
+                "description": f"Thanh toan don hang {order.order_id}"
+            }
+            order.qr_content = json.dumps(bank_info, ensure_ascii=False)
+            order.save()
+            
+            # Tạo các item của đơn hàng
+            for cart_item in cart_items:
+                QROrderItem.objects.create(
+                    qr_order=order,
+                    product=cart_item.product,
+                    quantity=cart_item.quantity,
+                    price=cart_item.product.price
+                )
+            
+            # Xóa giỏ hàng sau khi tạo đơn hàng
+            cart_items.delete()
+            
+            return redirect('qr_payment', order_id=order.order_id)
+    else:
+        form = QROrderForm()
+    
+    return render(request, 'qr_checkout.html', {
+        'form': form,
+        'cart_items': cart_items,
+        'total_price': total_price
+    })
+
+def qr_payment(request, order_id):
+    """Hiển thị mã QR thanh toán"""
+    order = get_object_or_404(QROrder, order_id=order_id)
+    
+    # Tạo mã QR
+    qr_data = order.qr_content
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(qr_data)
+    qr.make(fit=True)
+    
+    # Tạo hình ảnh QR
+    qr_img = qr.make_image(fill_color="black", back_color="white")
+    
+    # Chuyển đổi thành base64 để hiển thị trên web
+    buffer = BytesIO()
+    qr_img.save(buffer, format='PNG')
+    qr_image_base64 = base64.b64encode(buffer.getvalue()).decode()
+    
+    # Parse thông tin ngân hàng từ QR content
+    bank_info = json.loads(order.qr_content)
+    
+    return render(request, 'qr_payment.html', {
+        'order': order,
+        'qr_image': qr_image_base64,
+        'bank_info': bank_info
+    })
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def check_payment_status(request, order_id):
+    """API để kiểm tra trạng thái thanh toán (giả lập)"""
+    try:
+        order = QROrder.objects.get(order_id=order_id)
+        
+        # Trong thực tế, bạn sẽ tích hợp với API ngân hàng để kiểm tra thanh toán
+        # Ở đây tôi giả lập việc thanh toán thành công sau 30 giây
+        time_diff = timezone.now() - order.created_at
+        if time_diff.total_seconds() > 30:  # Giả lập thanh toán thành công sau 30 giây
+            order.status = 'paid'
+            order.save()
+            return JsonResponse({'status': 'paid', 'message': 'Thanh toán thành công!'})
+        else:
+            return JsonResponse({'status': 'pending', 'message': 'Đang chờ thanh toán...'})
+    except QROrder.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Không tìm thấy đơn hàng'})
+    
+
+
+
+
+
+def payment_success(request, order_id):
+    """Trang thông báo thanh toán thành công"""
+    order = get_object_or_404(QROrder, order_id=order_id)
+    if order.status != 'paid':
+        messages.warning(request, 'Đơn hàng chưa được thanh toán.')
+        return redirect('qr_payment', order_id=order_id)
+    
+    return render(request, 'payment_success.html', {'order': order})

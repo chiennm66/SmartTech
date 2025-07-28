@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <title>Thanh toán QR - SmartTech</title>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4><i class="fas fa-user"></i> Thông tin khách hàng</h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.customer_name.id_for_label }}">Họ và tên *</label>
+                                        {{ form.customer_name }}
+                                        {% if form.customer_name.errors %}
+                                            <div class="text-danger">{{ form.customer_name.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.customer_email.id_for_label }}">Email *</label>
+                                        {{ form.customer_email }}
+                                        {% if form.customer_email.errors %}
+                                            <div class="text-danger">{{ form.customer_email.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.customer_phone.id_for_label }}">Số điện thoại *</label>
+                                        {{ form.customer_phone }}
+                                        {% if form.customer_phone.errors %}
+                                            <div class="text-danger">{{ form.customer_phone.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.customer_address.id_for_label }}">Địa chỉ giao hàng *</label>
+                                        {{ form.customer_address }}
+                                        {% if form.customer_address.errors %}
+                                            <div class="text-danger">{{ form.customer_address.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <a href="{% url 'view_cart' %}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Quay lại giỏ hàng
+                                </a>
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-qrcode"></i> Tạo mã QR thanh toán
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5><i class="fas fa-receipt"></i> Đơn hàng của bạn</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for item in cart_items %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <div>
+                                <strong>{{ item.product.name }}</strong><br>
+                                <small class="text-muted">Số lượng: {{ item.quantity }}</small>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-danger">{{ item.get_total_price|floatformat:0 }} VND</span>
+                            </div>
+                        </div>
+                        <hr>
+                        {% endfor %}
+                        <div class="d-flex justify-content-between">
+                            <strong>Tổng cộng:</strong>
+                            <strong class="text-danger">{{ total_price|floatformat:0 }} VND</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header bg-warning">
+                        <h6><i class="fas fa-info-circle"></i> Lưu ý thanh toán</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="small">
+                            <li>Quét mã QR bằng ứng dụng ngân hàng</li>
+                            <li>Kiểm tra thông tin chuyển khoản</li>
+                            <li>Thực hiện thanh toán đúng số tiền</li>
+                            <li>Hệ thống sẽ tự động xác nhận thanh toán</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

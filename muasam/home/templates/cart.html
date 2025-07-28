@@ -55,7 +55,8 @@
             <p class="h5"><strong>Tổng cộng:</strong> <span class="text-danger">{{ total_price|floatformat:0 }} VND</span></p>
             <div>
                 <a href="/" class="btn btn-primary btn-lg"><i class="fas fa-shopping-cart"></i> Tiếp tục mua sắm</a>
-                <a href="#" class="btn btn-success btn-lg"><i class="fas fa-credit-card"></i> Thanh toán</a>
+                <a href="{% url 'qr_checkout' %}" class="btn btn-success btn-lg"><i class="fas fa-qrcode"></i> Thanh toán QR</a>
+                <a href="#" class="btn btn-warning btn-lg"><i class="fas fa-credit-card"></i> Thanh toán thường</a>
             </div>
         </div>
         {% else %}
