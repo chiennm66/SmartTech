@@ -1,0 +1,88 @@
+<!-- filepath: /Users/chien/Downloads/muasam/home/templates/product_detail.html -->
+<!doctype html>
+<html lang="vi">
+  <head>
+    {% load static %}
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'home/styles.css' %}">
+    <title>Chi tiết sản phẩm</title>
+  </head>
+  <body>
+    <div class="container mt-5">
+        <!-- Thông tin sản phẩm -->
+        <div class="row">
+            <div class="col-md-6">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded shadow-sm">
+            </div>
+            <div class="col-md-6">
+                <h1 class="text-primary">{{ product.name }}</h1>
+                <p class="text-muted">{{ product.description }}</p>
+                <p class="text-danger h4">Giá: {{ product.price|floatformat:0 }} VND</p>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Nhà sản xuất:</strong> {{ product.manufacturer }}</li>
+                    <li class="list-group-item"><strong>Bảo hành:</strong> {{ product.warranty }}</li>
+                    <li class="list-group-item"><strong>Số lượng trong kho:</strong> {{ product.stock }}</li>
+                </ul>
+                <div class="mt-4">
+                    <a href="{% url 'place_order' product.pk %}" class="btn btn-success btn-lg"><i class="fas fa-shopping-cart"></i> Mua hàng</a>
+                    <a href="{% url 'add_to_cart' product.pk %}" class="btn btn-warning btn-lg"><i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng</a>
+                    <a href="{% url 'home' %}" class="btn btn-secondary btn-lg"><i class="fas fa-arrow-left"></i> Quay lại</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Đánh giá sản phẩm -->
+        <div class="mt-5">
+            <h2 class="text-center">Đánh giá sản phẩm</h2>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    {% if reviews %}
+                        <ul class="list-group">
+                            {% for review in reviews %}
+                                <li class="list-group-item">
+                                    <strong>{{ review.name }}</strong> - {{ review.rating }} sao
+                                    <p>{{ review.comment }}</p>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-center text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Gửi đánh giá -->
+        <div class="mt-5">
+            <h2 class="text-center">Gửi đánh giá</h2>
+            <form method="post" action="{% url 'submit_review' product.pk %}" class="shadow-sm p-4 bg-light rounded">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_rating">Đánh giá:</label>
+                    {{ review_form.rating }}
+                </div>
+                <div class="form-group">
+                    <label for="id_name">Tên:</label>
+                    {{ review_form.name }}
+                </div>
+                <div class="form-group">
+                    <label for="id_comment">Nhận xét:</label>
+                    {{ review_form.comment }}
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg btn-block"><i class="fas fa-paper-plane"></i> Gửi Đánh Giá</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js" crossorigin="anonymous"></script>
+  </body>
+</html>

@@ -1,0 +1,75 @@
+
+<!doctype html>
+<html lang="vi">
+  <head>
+    {% load static %}
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+
+    <title>Cart</title>
+  </head>
+  <body>
+
+    <h1 class="text-center my-4">Giỏ Hàng</h1>
+    <div class="container">
+        {% if cart_items %}
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered align-middle">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th class="text-center">Số lượng</th>
+                        <th class="text-center">Giá</th>
+                        <th class="text-center">Tổng</th>
+                        <th class="text-center">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cart_items %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-thumbnail" style="width: 80px; height: 80px; margin-right: 10px;">
+                                <span>{{ item.product.name }}</span>
+                            </div>
+                        </td>
+                        <td class="text-center">{{ item.quantity }}</td>
+                        <td class="text-center">{{ item.product.price|floatformat:0 }} VND</td>
+                        <td class="text-center">{{ item.get_total_price|floatformat:0 }} VND</td>
+                        <td class="text-center">
+                            <a href="{% url 'remove_from_cart' item.id %}" class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash-alt"></i> Xóa
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <p class="h5"><strong>Tổng cộng:</strong> <span class="text-danger">{{ total_price|floatformat:0 }} VND</span></p>
+            <div>
+                <a href="/" class="btn btn-primary btn-lg"><i class="fas fa-shopping-cart"></i> Tiếp tục mua sắm</a>
+                <a href="#" class="btn btn-success btn-lg"><i class="fas fa-credit-card"></i> Thanh toán</a>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-warning text-center mt-5" role="alert">
+            <h4 class="alert-heading">Giỏ hàng trống!</h4>
+            <p>Hiện tại bạn chưa thêm sản phẩm nào vào giỏ hàng.</p>
+            <hr>
+            <a href="/" class="btn btn-primary btn-lg"><i class="fas fa-shopping-cart"></i> Tiếp tục mua sắm</a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+  </body>
+</html>

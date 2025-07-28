@@ -1,0 +1,81 @@
+<!-- filepath: /Users/chien/Downloads/muasam/home/templates/contact.html -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact</title>
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+    <style>
+        .swiper-slide {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .swiper-slide-active {
+            transform: scale(1.1);
+            opacity: 1;
+        }
+        .swiper-slide-next,
+        .swiper-slide-prev {
+            transform: scale(0.9);
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <h3>Contact</h3>
+
+    <div class="swiper-container">
+        <div class="swiper-wrapper">
+            {% for product in products %}
+                <div class="swiper-slide">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid">
+                    <h4>{{ product.name }}</h4>
+                    <p>{{ product.price }} VND</p>
+                </div>
+            {% endfor %}
+        </div>
+        <!-- Add Pagination -->
+        <div class="swiper-pagination"></div>
+        <!-- Add Navigation -->
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+    </div>
+
+    <!-- Swiper JS -->
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var swiper = new Swiper('.swiper-container', {
+                slidesPerView: 1,
+                spaceBetween: 10,
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
+                autoplay: {
+                    delay: 2500,
+                    disableOnInteraction: false,
+                },
+                loop: true,
+                on: {
+                    slideChangeTransitionStart: function () {
+                        var slides = document.querySelectorAll('.swiper-slide');
+                        slides.forEach(function (slide) {
+                            slide.style.transform = 'scale(0.9)';
+                            slide.style.opacity = '0.5';
+                        });
+                        var activeSlide = document.querySelector('.swiper-slide-active');
+                        activeSlide.style.transform = 'scale(1.1)';
+                        activeSlide.style.opacity = '1';
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
