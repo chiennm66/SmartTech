@@ -15,7 +15,7 @@ urlpatterns = [
     path('product/<int:pk>/', views.product_detail, name='product_detail'),
     path('register/', views.register, name='register'),  # Đăng ký
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),  # Đăng nhập
-    path('logout/', auth_views.LogoutView.as_view(template_name='logout.html'), name='logout'),  # Đăng xuất
+    path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),  # Đăng xuất
 
     path('cart/add/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/', views.view_cart, name='view_cart'),
