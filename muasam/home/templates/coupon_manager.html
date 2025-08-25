@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <title>Quản lý mã giảm giá - SmartTech</title>
+    <style>
+        .coupon-form {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .coupon-list {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        .active-badge {
+            background-color: #28a745;
+        }
+        .inactive-badge {
+            background-color: #dc3545;
+        }
+        .help-text {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4"><i class="fas fa-tags"></i> Quản lý mã giảm giá</h1>
+        
+        <div class="row">
+            <div class="col-md-5">
+                <div class="coupon-form">
+                    <h3>Tạo mã giảm giá mới</h3>
+                    <form method="post" action="{% url 'create_coupon' %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="code">Mã giảm giá</label>
+                            <input type="text" class="form-control" id="code" name="code" required>
+                            <small class="help-text">Ví dụ: SUMMER10, SALE50K</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="discount_type">Loại giảm giá</label>
+                            <select class="form-control" id="discount_type" name="discount_type" required>
+                                <option value="percentage">Phần trăm (%)</option>
+                                <option value="fixed">Số tiền cố định (VND)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="value">Giá trị giảm giá</label>
+                            <input type="number" class="form-control" id="value" name="value" min="0" step="0.01" required>
+                            <small class="help-text">Nhập % hoặc số tiền tùy theo loại đã chọn</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="min_value">Giá trị đơn hàng tối thiểu</label>
+                            <input type="number" class="form-control" id="min_value" name="min_value" min="0" value="0">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="max_discount">Giảm giá tối đa (cho %)</label>
+                            <input type="number" class="form-control" id="max_discount" name="max_discount" min="0">
+                            <small class="help-text">Để trống nếu không giới hạn</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="valid_from">Thời gian bắt đầu</label>
+                            <input type="datetime-local" class="form-control" id="valid_from" name="valid_from" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="valid_to">Thời gian kết thúc</label>
+                            <input type="datetime-local" class="form-control" id="valid_to" name="valid_to" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="max_uses">Số lần sử dụng tối đa</label>
+                            <input type="number" class="form-control" id="max_uses" name="max_uses" min="1" value="1" required>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="active" name="active" checked>
+                            <label class="form-check-label" for="active">Kích hoạt</label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-plus"></i> Tạo mã giảm giá
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="col-md-7">
+                <div class="coupon-list">
+                    <h3>Danh sách mã giảm giá</h3>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Mã code</th>
+                                    <th>Giảm giá</th>
+                                    <th>Trạng thái</th>
+                                    <th>Sử dụng</th>
+                                    <th>Hết hạn</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for coupon in coupons %}
+                                <tr>
+                                    <td><strong>{{ coupon.code }}</strong></td>
+                                    <td>
+                                        {% if coupon.discount_type == 'percentage' %}
+                                            {{ coupon.value }}%
+                                            {% if coupon.max_discount %}
+                                            <br><small>(tối đa {{ coupon.max_discount|floatformat:0 }})</small>
+                                            {% endif %}
+                                        {% else %}
+                                            {{ coupon.value|floatformat:0 }} VND
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if coupon.is_valid %}
+                                        <span class="badge active-badge">Còn hiệu lực</span>
+                                        {% else %}
+                                        <span class="badge inactive-badge">Hết hiệu lực</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ coupon.times_used }}/{{ coupon.max_uses }}</td>
+                                    <td>{{ coupon.valid_to|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">Chưa có mã giảm giá nào</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{% url 'coupon_guide' %}" class="btn btn-info">
+                            <i class="fas fa-question-circle"></i> Xem hướng dẫn đầy đủ
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Đặt giá trị mặc định cho ngày bắt đầu và kết thúc
+        $(document).ready(function() {
+            // Ngày bắt đầu: hôm nay
+            var today = new Date();
+            var todayStr = today.toISOString().slice(0,16);
+            
+            // Ngày kết thúc: 30 ngày sau
+            var nextMonth = new Date();
+            nextMonth.setDate(nextMonth.getDate() + 30);
+            var nextMonthStr = nextMonth.toISOString().slice(0,16);
+            
+            $('#valid_from').val(todayStr);
+            $('#valid_to').val(nextMonthStr);
+        });
+    </script>
+</body>
+</html>

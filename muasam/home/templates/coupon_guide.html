@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <title>Hướng dẫn quản lý mã giảm giá - SmartTech</title>
+    <style>
+        .guide-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        .guide-content {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .guide-content h1, .guide-content h2 {
+            color: #007bff;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .guide-content h3 {
+            color: #28a745;
+            margin-top: 25px;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        code {
+            color: #d63384;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container guide-container">
+        <div class="mb-4">
+            <a href="{% url 'admin:index' %}" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Quay lại trang quản trị
+            </a>
+            <a href="{% url 'admin:home_coupon_add' %}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Tạo mã giảm giá mới
+            </a>
+        </div>
+        
+        <div class="guide-content">
+            {{ guide_content|safe }}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'admin:home_coupon_changelist' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-tag"></i> Quản lý mã giảm giá
+            </a>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

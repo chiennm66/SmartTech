@@ -52,7 +52,12 @@
             </table>
         </div>
         <div class="d-flex justify-content-between align-items-center mt-4">
-            <p class="h5"><strong>Tổng cộng:</strong> <span class="text-danger">{{ total_price|floatformat:0 }} VND</span></p>
+            <div>
+                <p class="h5"><strong>Tổng cộng:</strong> <span class="text-danger">{{ total_price|floatformat:0 }} VND</span></p>
+                <a href="{% url 'view_coupons' %}" class="btn btn-link text-info">
+                    <i class="fas fa-tags"></i> Xem mã giảm giá
+                </a>
+            </div>
             <div>
                 <a href="/" class="btn btn-primary btn-lg"><i class="fas fa-shopping-cart"></i> Tiếp tục mua sắm</a>
                 <a href="{% url 'qr_checkout' %}" class="btn btn-success btn-lg"><i class="fas fa-qrcode"></i> Thanh toán QR</a>

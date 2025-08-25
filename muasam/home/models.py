@@ -1,5 +1,7 @@
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Product(models.Model):
     CATEGORY_CHOICES = [
@@ -55,6 +57,51 @@ class Cart(models.Model):
         return self.quantity * self.product.price
 
 ### Thêm mô hình đơn hàng QR
+### Mã giảm giá
+class Coupon(models.Model):
+    code = models.CharField(max_length=50, unique=True)
+    discount_type = models.CharField(max_length=10, choices=[
+        ('percentage', 'Phần trăm'),
+        ('fixed', 'Số tiền cố định')
+    ])
+    value = models.DecimalField(max_digits=10, decimal_places=2)  # Giá trị giảm giá
+    min_value = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Giá trị đơn hàng tối thiểu
+    max_discount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Giảm giá tối đa (cho % giảm giá)
+    valid_from = models.DateTimeField(default=timezone.now)  # Thời gian bắt đầu hiệu lực
+    valid_to = models.DateTimeField()  # Thời gian kết thúc hiệu lực
+    max_uses = models.IntegerField(default=1)  # Số lần sử dụng tối đa
+    times_used = models.IntegerField(default=0)  # Số lần đã được sử dụng
+    active = models.BooleanField(default=True)  # Trạng thái kích hoạt
+
+    def __str__(self):
+        if self.discount_type == 'percentage':
+            return f"{self.code} - {self.value}%"
+        return f"{self.code} - {self.value} VND"
+    
+    def is_valid(self):
+        now = timezone.now()
+        if not self.active:
+            return False
+        if now < self.valid_from or now > self.valid_to:
+            return False
+        if self.times_used >= self.max_uses:
+            return False
+        return True
+    
+    def calculate_discount(self, total_amount):
+        if not self.is_valid() or total_amount < self.min_value:
+            return 0
+        
+        if self.discount_type == 'percentage':
+            discount = total_amount * (self.value / 100)
+            if self.max_discount and discount > self.max_discount:
+                discount = self.max_discount
+        else:  # fixed amount
+            discount = self.value
+            
+        return discount
+
+### Thêm mô hình đơn hàng QR
 class QROrder(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Chờ thanh toán'),
@@ -72,6 +119,11 @@ class QROrder(models.Model):
     qr_content = models.TextField()  # Nội dung mã QR
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # Thêm trường coupon
+    coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Số tiền giảm giá
+    original_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Số tiền trước khi giảm giá
     
     def __str__(self):
         return f"Order {self.order_id} - {self.total_amount} VND"

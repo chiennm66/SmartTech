@@ -1,5 +1,5 @@
 from django import forms
-from .models import Order, QROrder
+from .models import Order, QROrder, Coupon
 from .models import Review
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
@@ -19,6 +19,9 @@ class ReviewForm(forms.ModelForm):
         }
 
 class QROrderForm(forms.ModelForm):
+    coupon_code = forms.CharField(max_length=50, required=False, 
+                                widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nhập mã giảm giá (nếu có)'}))
+    
     class Meta:
         model = QROrder
         fields = ['customer_name', 'customer_email', 'customer_phone', 'customer_address']

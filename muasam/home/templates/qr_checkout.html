@@ -60,6 +60,23 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="form-group">
+                                        <label for="{{ form.coupon_code.id_for_label }}">Mã giảm giá (nếu có)</label>
+                                        <div class="input-group">
+                                            {{ form.coupon_code }}
+                                            <div class="input-group-append">
+                                                <button type="button" id="checkCouponBtn" class="btn btn-outline-secondary">Áp dụng</button>
+                                            </div>
+                                        </div>
+                                        <small id="couponResult" class="form-text"></small>
+                                        <a href="{% url 'view_coupons' %}" class="text-info" target="_blank">
+                                            <i class="fas fa-tags"></i> Xem tất cả mã giảm giá có sẵn
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="text-center">
                                 <a href="{% url 'view_cart' %}" class="btn btn-secondary">
                                     <i class="fas fa-arrow-left"></i> Quay lại giỏ hàng
@@ -115,7 +132,51 @@
         </div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Kiểm tra mã giảm giá
+            $("#checkCouponBtn").click(function() {
+                var couponCode = $("#{{ form.coupon_code.id_for_label }}").val().trim();
+                if (couponCode === "") {
+                    $("#couponResult").html('<span class="text-danger">Vui lòng nhập mã giảm giá</span>');
+                    return;
+                }
+
+                // Gửi yêu cầu kiểm tra mã giảm giá
+                $.ajax({
+                    url: "{% url 'check_coupon' %}",
+                    type: "POST",
+                    data: {
+                        'coupon_code': couponCode,
+                        'total_amount': {{ total_price }},
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(data) {
+                        if (data.valid) {
+                            // Hiển thị thông tin giảm giá
+                            $("#couponResult").html('<span class="text-success">' + data.message + '</span>');
+                            
+                            // Cập nhật thông tin đơn hàng hiển thị
+                            var discountHtml = '<div class="d-flex justify-content-between mb-2"><strong>Giảm giá:</strong><span class="text-success">-' + data.discount_amount_formatted + ' VND</span></div>';
+                            var totalHtml = '<div class="d-flex justify-content-between"><strong>Tổng cộng:</strong><strong class="text-danger">' + data.final_amount_formatted + ' VND</strong></div>';
+                            
+                            // Cập nhật phần tổng cộng
+                            $('.card-body .d-flex.justify-content-between').last().before(discountHtml);
+                            $('.card-body .d-flex.justify-content-between').last().replaceWith(totalHtml);
+                        } else {
+                            // Hiển thị lỗi
+                            $("#couponResult").html('<span class="text-danger">' + data.message + '</span>');
+                        }
+                    },
+                    error: function() {
+                        $("#couponResult").html('<span class="text-danger">Đã xảy ra lỗi. Vui lòng thử lại.</span>');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

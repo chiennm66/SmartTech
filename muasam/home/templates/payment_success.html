@@ -46,7 +46,11 @@
                                 </div>
                                 <div class="col-md-6">
                                     <p><strong>Số điện thoại:</strong> {{ order.customer_phone }}</p>
-                                    <p><strong>Tổng tiền:</strong> <span class="text-danger font-weight-bold">{{ order.total_amount|floatformat:0 }} VND</span></p>
+                                    {% if order.discount_amount > 0 %}
+                                    <p><strong>Tổng tiền gốc:</strong> <span class="text-muted">{{ order.original_amount|floatformat:0 }} VND</span></p>
+                                    <p><strong>Giảm giá:</strong> <span class="text-success">- {{ order.discount_amount|floatformat:0 }} VND</span></p>
+                                    {% endif %}
+                                    <p><strong>Tổng thanh toán:</strong> <span class="text-danger font-weight-bold">{{ order.total_amount|floatformat:0 }} VND</span></p>
                                     <p><strong>Thời gian:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
                                 </div>
                             </div>

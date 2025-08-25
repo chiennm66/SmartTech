@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <title>Mã Giảm Giá - SmartTech</title>
+    <style>
+        .coupon-card {
+            border: 2px dashed #007bff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            position: relative;
+        }
+        .coupon-code {
+            background: #007bff;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .expiry-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .coupon-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .copy-btn {
+            cursor: pointer;
+            margin-left: 10px;
+            background: #28a745;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4"><i class="fas fa-tags"></i> Mã Giảm Giá</h1>
+        
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Danh sách mã giảm giá hiện có tại SmartTech. Nhập các mã này khi thanh toán để nhận ưu đãi!
+                </div>
+            </div>
+        </div>
+
+        {% if coupons %}
+            <div class="row">
+                {% for coupon in coupons %}
+                <div class="col-md-6">
+                    <div class="coupon-card">
+                        <div class="expiry-badge">
+                            <span class="badge badge-warning">
+                                <i class="fas fa-clock"></i> Hết hạn: {{ coupon.valid_to|date:"d/m/Y" }}
+                            </span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="coupon-code">{{ coupon.code }}
+                                <button class="copy-btn" onclick="copyCouponCode('{{ coupon.code }}')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </span>
+                            <span class="badge badge-info">Còn {{ coupon.max_uses|add:"-"|add:coupon.times_used }} lượt dùng</span>
+                        </div>
+                        
+                        <div class="coupon-value mb-2">
+                            {% if coupon.discount_type == 'percentage' %}
+                                Giảm {{ coupon.value|floatformat:0 }}% 
+                                {% if coupon.max_discount %}
+                                    (tối đa {{ coupon.max_discount|floatformat:0 }} VND)
+                                {% endif %}
+                            {% else %}
+                                Giảm {{ coupon.value|floatformat:0 }} VND
+                            {% endif %}
+                        </div>
+                        
+                        <p class="mb-1">
+                            <i class="fas fa-shopping-cart"></i> Áp dụng cho đơn hàng từ {{ coupon.min_value|floatformat:0 }} VND
+                        </p>
+                        
+                        <hr>
+                        <div class="text-center">
+                            <a href="/" class="btn btn-primary btn-sm">
+                                <i class="fas fa-shopping-bag"></i> Mua sắm ngay
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-warning text-center">
+                <i class="fas fa-exclamation-circle"></i> Hiện tại chưa có mã giảm giá nào có sẵn.
+            </div>
+        {% endif %}
+        
+        <div class="text-center mt-4 mb-5">
+            <a href="/" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-home"></i> Quay lại trang chủ
+            </a>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyCouponCode(code) {
+            navigator.clipboard.writeText(code).then(function() {
+                alert("Đã sao chép mã: " + code);
+            }, function() {
+                alert("Không thể sao chép mã. Vui lòng sao chép thủ công.");
+            });
+        }
+    </script>
+</body>
+</html>
