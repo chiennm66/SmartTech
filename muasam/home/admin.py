@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, Order, Review, QROrder, QROrderItem, Coupon
+from .models import Product, Order, Review, QROrder, QROrderItem, Coupon, FlashSale
 from django.utils import timezone
 
 class ReviewAdmin(admin.ModelAdmin):
@@ -83,8 +83,31 @@ class CouponAdmin(admin.ModelAdmin):
     is_active.boolean = True
     is_active.short_description = 'Còn hiệu lực'
 
+class FlashSaleAdmin(admin.ModelAdmin):
+    list_display = ('product', 'discount_percentage', 'original_price_display', 'sale_price_display', 'start_time', 'end_time', 'stock_display', 'is_currently_active')
+    list_filter = ('is_active', 'discount_percentage')
+    search_fields = ('product__name',)
+    
+    def original_price_display(self, obj):
+        return f"{int(obj.original_price):,} VND"
+    original_price_display.short_description = 'Giá gốc'
+    
+    def sale_price_display(self, obj):
+        return f"{int(obj.sale_price):,} VND"
+    sale_price_display.short_description = 'Giá sale'
+    
+    def stock_display(self, obj):
+        return f"{obj.get_remaining_items()}/{obj.available_quantity}"
+    stock_display.short_description = 'Kho'
+    
+    def is_currently_active(self, obj):
+        return obj.is_valid()
+    is_currently_active.boolean = True
+    is_currently_active.short_description = 'Đang hoạt động'
+
 admin.site.register(Product)
 admin.site.register(Order)
 admin.site.register(Review, ReviewAdmin)
 admin.site.register(QROrder, QROrderAdmin)
 admin.site.register(Coupon, CouponAdmin)
+admin.site.register(FlashSale, FlashSaleAdmin)

@@ -139,3 +139,24 @@ class QROrderItem(models.Model):
     
     def get_total_price(self):
         return self.quantity * self.price
+        
+class FlashSale(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    discount_percentage = models.IntegerField()
+    original_price = models.DecimalField(max_digits=10, decimal_places=2)
+    sale_price = models.DecimalField(max_digits=10, decimal_places=2)
+    available_quantity = models.IntegerField(default=1)
+    sold_quantity = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return f"Flash Sale: {self.product.name} - {self.discount_percentage}% off"
+    
+    def get_remaining_items(self):
+        return self.available_quantity - self.sold_quantity
+        
+    def is_valid(self):
+        now = timezone.now()
+        return self.is_active and self.start_time <= now <= self.end_time and self.get_remaining_items() > 0

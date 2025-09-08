@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
-from .models import Product, Order, Cart, QROrder, QROrderItem, Coupon
+from .models import Product, Order, Cart, QROrder, QROrderItem, Coupon, FlashSale
 from .forms import OrderForm, ReviewForm, QROrderForm
 from django.http import HttpResponseNotFound, JsonResponse
 from django.contrib import messages
@@ -22,8 +22,18 @@ def home(request):
     paginator = Paginator(product_list, 6)  # Hiển thị 6 sản phẩm mỗi trang
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'index.html', {'page_obj': page_obj})  # Truyền page_obj vào template
-     #{'page_obj': page_obj}
+    
+    # Lấy danh sách flash sale đang hoạt động
+    active_flash_sales = FlashSale.objects.filter(
+        is_active=True,
+        start_time__lte=timezone.now(),
+        end_time__gte=timezone.now()
+    ).select_related('product')
+    
+    return render(request, 'index.html', {
+        'page_obj': page_obj,
+        'flash_sales': active_flash_sales
+    })  # Truyền page_obj và flash_sales vào template
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
     return render(request, 'product_detail.html', {'product': product})
@@ -103,6 +113,25 @@ def add_to_cart(request, product_id):
     if not session_key:
         request.session.create()
         session_key = request.session.session_key
+        
+    # Kiểm tra xem sản phẩm có đang trong Flash Sale không
+    flash_sale = FlashSale.objects.filter(
+        product=product,
+        is_active=True,
+        start_time__lte=timezone.now(),
+        end_time__gte=timezone.now()
+    ).order_by('-discount_percentage').first()
+    
+    # Sử dụng giá flash sale nếu có
+    if flash_sale and flash_sale.get_remaining_items() > 0:
+        price = flash_sale.sale_price
+        # Lưu thông tin flash sale vào session để sử dụng sau này
+        request.session[f'flash_sale_{product_id}'] = flash_sale.id
+    else:
+        price = product.price
+        if f'flash_sale_{product_id}' in request.session:
+            del request.session[f'flash_sale_{product_id}']
+    
     cart_item, created = Cart.objects.get_or_create(
         product=product,
         session_key=session_key,
@@ -254,6 +283,22 @@ def check_payment_status(request, order_id):
         if time_diff.total_seconds() > 30:  # Giả lập thanh toán thành công sau 30 giây
             order.status = 'paid'
             order.save()
+            
+            # Cập nhật số lượng đã bán trong Flash Sale
+            for item in order.items.all():
+                # Tìm flash sale đang hoạt động cho sản phẩm này
+                flash_sales = FlashSale.objects.filter(
+                    product=item.product,
+                    is_active=True,
+                )
+                
+                if flash_sales.exists():
+                    flash_sale = flash_sales.first()
+                    flash_sale.sold_quantity += item.quantity
+                    if flash_sale.sold_quantity >= flash_sale.available_quantity:
+                        flash_sale.is_active = False  # Hết hàng, tắt flash sale
+                    flash_sale.save()
+            
             return JsonResponse({'status': 'paid', 'message': 'Thanh toán thành công!'})
         else:
             return JsonResponse({'status': 'pending', 'message': 'Đang chờ thanh toán...'})

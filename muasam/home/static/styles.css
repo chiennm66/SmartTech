@@ -20,3 +20,187 @@ body {
 .card-text{
     color:blue !important;
 }
+
+/* Flash Sale Styles */
+.flash-sale-section {
+    margin: 30px 0;
+    background: #000;
+    color: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.flash-sale-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 15px;
+}
+
+.flash-sale-title {
+    display: flex;
+    align-items: center;
+}
+
+.flash-sale-title img {
+    height: 40px;
+    margin-right: 15px;
+}
+
+.flash-sale-countdown {
+    display: flex;
+    align-items: center;
+}
+
+.countdown-box {
+    background: #333;
+    color: #fff;
+    font-size: 24px;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin: 0 3px;
+}
+
+.countdown-separator {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0 2px;
+}
+
+.flash-sale-time {
+    margin-left: 15px;
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.flash-sale-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.flash-sale-items {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Hide scrollbar Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar IE and Edge */
+    gap: 15px;
+    padding: 10px 0;
+}
+
+.flash-sale-items::-webkit-scrollbar {
+    display: none; /* Hide scrollbar Chrome, Safari, Opera */
+}
+
+.flash-sale-item {
+    flex: 0 0 auto;
+    width: 200px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    color: #000;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
+
+.flash-sale-item:hover {
+    transform: translateY(-5px);
+}
+
+.flash-sale-item img {
+    width: 100%;
+    height: 150px;
+    object-fit: contain;
+    background: #f5f5f5;
+}
+
+.flash-sale-item-content {
+    padding: 15px;
+}
+
+.flash-sale-item-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    height: 40px;
+    overflow: hidden;
+}
+
+.flash-sale-item-price {
+    display: flex;
+    flex-direction: column;
+}
+
+.sale-price {
+    font-size: 16px;
+    font-weight: bold;
+    color: #ff4d4d;
+}
+
+.original-price {
+    font-size: 12px;
+    text-decoration: line-through;
+    color: #999;
+}
+
+.discount-tag {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ff4d4d;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 3px;
+}
+
+.stock-info {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #666;
+}
+
+.stock-progress {
+    height: 8px;
+    background: #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.stock-progress-bar {
+    height: 100%;
+    background: linear-gradient(to right, #ff9a9e, #ff4d4d);
+}
+
+.flash-sale-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.8);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.flash-sale-prev {
+    left: 10px;
+}
+
+.flash-sale-next {
+    right: 10px;
+}

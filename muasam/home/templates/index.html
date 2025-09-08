@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
     <!-- Navigation Menu -->
@@ -56,6 +57,60 @@
     </nav>
 
     {% include 'carousel.html' %}
+    
+    {% if flash_sales %}
+    <div class="container">
+      <div class="flash-sale-section">
+        <div class="flash-sale-header">
+          <div class="flash-sale-title">
+            <img src="{% static 'img/flash-sale-icon.png' %}" onerror="this.src='https://via.placeholder.com/40x40?text=FLASH'" alt="Flash Sale">
+            <h2>FLASH SALE</h2>
+          </div>
+          <div class="flash-sale-countdown" data-end-time="{{ flash_sales.0.end_time|date:'c' }}">
+            <div>KẾT THÚC TRONG</div>
+            <div class="countdown-box countdown-hours">00</div>
+            <div class="countdown-separator">:</div>
+            <div class="countdown-box countdown-minutes">00</div>
+            <div class="countdown-separator">:</div>
+            <div class="countdown-box countdown-seconds">00</div>
+            <div class="flash-sale-time">
+              <div>Đang diễn ra</div>
+              <div>09:00 - 23:59</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flash-sale-container">
+          <div class="flash-sale-items">
+            {% for flash_sale in flash_sales %}
+            <div class="flash-sale-item">
+              <div class="discount-tag">-{{ flash_sale.discount_percentage }}%</div>
+              <a href="{% url 'product_detail' flash_sale.product.pk %}">
+                <img src="{{ flash_sale.product.image.url }}" alt="{{ flash_sale.product.name }}">
+              </a>
+              <div class="flash-sale-item-content">
+                <div class="flash-sale-item-title">{{ flash_sale.product.name }}</div>
+                <div class="flash-sale-item-price">
+                  <div class="sale-price">{{ flash_sale.sale_price|floatformat:0 }}đ</div>
+                  <div class="original-price">{{ flash_sale.original_price|floatformat:0 }}đ</div>
+                </div>
+                <div class="stock-info">
+                  <span>Còn {{ flash_sale.get_remaining_items }}/{{ flash_sale.available_quantity }}</span>
+                </div>
+                <div class="stock-progress">
+                  <div class="stock-progress-bar" style="width: {% widthratio flash_sale.sold_quantity flash_sale.available_quantity 100 %}%;"></div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="flash-sale-nav flash-sale-prev">&#10094;</div>
+          <div class="flash-sale-nav flash-sale-next">&#10095;</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    
     <div class="container">
       <div class="row mt-5">
           {% for product in page_obj %}
